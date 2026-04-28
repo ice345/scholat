@@ -1,0 +1,4 @@
+requests>=2.28
+beautifulsoup4>=4.12
+python-dotenv>=1.0
+# Node.js（系统需安装，用于执行登录页加密 JS）
