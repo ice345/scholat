@@ -27,6 +27,21 @@ class ScheduleItem:
 
 
 @dataclass
+class TeamworkPost:
+    """团队协作平台帖子数据模型。"""
+
+    index: int
+    title: str
+    detail_url: str
+    visibility: str
+    publisher: str
+    publish_time: str
+    view_count: int
+    source_team: str
+    source_url: str
+
+
+@dataclass
 class HomeworkItem:
     """作业条目数据模型。"""
 

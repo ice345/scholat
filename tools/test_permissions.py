@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """飞书日历权限测试工具。
 
 验证飞书 API 的核心权限是否正常：日历 CRUD、事件 CRUD、ACL 增删。
@@ -68,7 +67,9 @@ def run() -> None:
         runner.record("calendar.read", data.get("code") == 0, data.get("msg", ""))
 
         # 更新日历
-        data = update_calendar(token, created_calendar_id, {"description": "自动化权限测试-已更新"})
+        data = update_calendar(
+            token, created_calendar_id, {"description": "自动化权限测试-已更新"}
+        )
         runner.record("calendar.update", data.get("code") == 0, data.get("msg", ""))
 
         # 创建事件
@@ -97,7 +98,9 @@ def run() -> None:
             runner.record("event.read", data.get("code") == 0, data.get("msg", ""))
 
             data = update_event(
-                token, created_calendar_id, created_event_id,
+                token,
+                created_calendar_id,
+                created_event_id,
                 {"summary": "权限测试事件-已更新"},
             )
             runner.record("event.update", data.get("code") == 0, data.get("msg", ""))
@@ -105,7 +108,9 @@ def run() -> None:
         # ACL 测试
         open_id = get_user_open_id(token, EMAIL, PHONE)
         if open_id:
-            data = add_calendar_subscriber(token, created_calendar_id, open_id, role="reader")
+            data = add_calendar_subscriber(
+                token, created_calendar_id, open_id, role="reader"
+            )
             if data.get("code") == 0:
                 acl_data = data.get("data", {})
                 created_acl_id = (
@@ -114,17 +119,27 @@ def run() -> None:
                     or acl_data.get("id")
                 )
                 if created_acl_id:
-                    runner.record("acl.add_subscriber", True, f"acl_id={created_acl_id}")
+                    runner.record(
+                        "acl.add_subscriber", True, f"acl_id={created_acl_id}"
+                    )
                 else:
-                    runner.record("acl.add_subscriber", False, f"添加成功但未返回 acl_id: {data}")
+                    runner.record(
+                        "acl.add_subscriber", False, f"添加成功但未返回 acl_id: {data}"
+                    )
             else:
                 runner.record("acl.add_subscriber", False, str(data))
 
             if created_acl_id:
-                data = remove_calendar_subscriber(token, created_calendar_id, created_acl_id)
-                runner.record("acl.remove_subscriber", data.get("code") == 0, data.get("msg", ""))
+                data = remove_calendar_subscriber(
+                    token, created_calendar_id, created_acl_id
+                )
+                runner.record(
+                    "acl.remove_subscriber", data.get("code") == 0, data.get("msg", "")
+                )
         else:
-            runner.record("acl.add_subscriber", False, "未能通过 EMAIL/PHONE 获取 open_id")
+            runner.record(
+                "acl.add_subscriber", False, "未能通过 EMAIL/PHONE 获取 open_id"
+            )
 
     except Exception as exc:
         runner.record("unexpected_error", False, str(exc))
@@ -134,14 +149,18 @@ def run() -> None:
         if created_event_id and created_calendar_id:
             try:
                 data = delete_event(token, created_calendar_id, created_event_id)
-                runner.record("event.delete", data.get("code") == 0, data.get("msg", ""))
+                runner.record(
+                    "event.delete", data.get("code") == 0, data.get("msg", "")
+                )
             except Exception as exc:
                 runner.record("event.delete", False, str(exc))
 
         if created_calendar_id:
             try:
                 data = delete_calendar(token, created_calendar_id)
-                runner.record("calendar.delete", data.get("code") == 0, data.get("msg", ""))
+                runner.record(
+                    "calendar.delete", data.get("code") == 0, data.get("msg", "")
+                )
             except Exception as exc:
                 runner.record("calendar.delete", False, str(exc))
 
