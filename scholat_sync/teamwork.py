@@ -154,11 +154,27 @@ def _parse_news_item(
     )
 
 
+_FILE_EXTS = (
+    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".zip", ".rar", ".ppt", ".pptx",
+    ".txt", ".csv", ".png", ".jpg", ".jpeg", ".gif",
+)
+
+# 在线文档/网盘服务，视为可下载资源归入 attachments
+_CLOUD_FILE_PATTERNS = (
+    "docs.qq.com/pdf/",
+    "docs.qq.com/file/",
+    "pan.baidu.com/s/",
+    "f.wps.cn/g/",
+    "kdocs.cn/l/",
+    "kdocs.cn/etapps/",
+)
+
+
 def fetch_post_detail(session: requests.Session, detail_url: str) -> dict:
     """获取帖子详情页内容。
 
     返回：
-    - 包含 title, content, author, publish_time 等字段的字典
+    - 包含 title, content, author, publish_time, attachments, links 等字段的字典
     """
     url = urljoin(TEAMWORK_BASE, detail_url)
     resp = session.get(url, timeout=30)
@@ -173,6 +189,7 @@ def fetch_post_detail(session: requests.Session, detail_url: str) -> dict:
         "author": "",
         "publish_time": "",
         "attachments": [],
+        "links": [],
     }
 
     # 标题
@@ -195,15 +212,28 @@ def fetch_post_detail(session: requests.Session, detail_url: str) -> dict:
     if content_div:
         detail["content"] = content_div.get_text(" ", strip=True)[:5000]
 
-    # 附件
-    for a in soup.find_all("a", href=True):
-        href = a["href"]
-        if any(
-            href.lower().endswith(ext)
-            for ext in [".pdf", ".doc", ".docx", ".xls", ".xlsx", ".zip", ".rar", ".ppt", ".pptx"]
-        ):
-            detail["attachments"].append(
-                {"name": a.get_text(strip=True), "url": urljoin(TEAMWORK_BASE, href)}
+        # 提取内容中的链接和附件
+        seen_urls = set()
+        for a in content_div.find_all("a", href=True):
+            href = a["href"].strip()
+            text = a.get_text(" ", strip=True)
+            if not href or href.startswith("#") or href.startswith("javascript"):
+                continue
+
+            abs_url = urljoin(TEAMWORK_BASE, href)
+            if abs_url in seen_urls:
+                continue
+            seen_urls.add(abs_url)
+
+            url_lower = abs_url.lower()
+            is_file = any(url_lower.endswith(ext) for ext in _FILE_EXTS) or any(
+                pat in url_lower for pat in _CLOUD_FILE_PATTERNS
             )
+            entry = {"name": text or abs_url.split("/")[-1], "url": abs_url}
+
+            if is_file:
+                detail["attachments"].append(entry)
+            else:
+                detail["links"].append(entry)
 
     return detail

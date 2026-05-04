@@ -2,7 +2,7 @@
 
 自动登录[学者网](https://www.scholat.com)，支持模式：
 
-- **流出模式** — 抓取数据后输出 JSON，供下游自行处理（`fetch_*.py`）
+- **流出模式** — 抓取数据后输出 JSON，供自行处理数据（`fetch_*.py`）
 
 覆盖三类数据源：课程作业、通用栏目日程、团队协作平台帖子。
 
@@ -129,7 +129,7 @@ python fetch_teamwork.py                          # 抓取全部预置团队
 python fetch_teamwork.py --team 团委              # 模糊匹配单个团队
 python fetch_teamwork.py --id 671 --nav 3         # 按 ID 抓取
 python fetch_teamwork.py --max-pages 2            # 限制页数
-python fetch_teamwork.py --detail                 # 同时抓取帖子详情
+python fetch_teamwork.py --detail                 # 同时抓取帖子详情(包括附件的下载链接)
 python fetch_teamwork.py -o posts.json
 ```
 
